@@ -7,6 +7,6 @@
         "express": "^4.17.1"
     },
     "scripts": {
-        "server": "node server | pino-colada"
+        "server": "node server"
     }
 }
