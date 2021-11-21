@@ -38,11 +38,16 @@ const app = express();
 app.use(express.json());
 
 app.get('/test', async (req, res) => {
+    console.log('received test request');
     axios.post('http://supervisor/core/api/states/input_text.noonlight_alarm_id',{
         data: {
             "state": `Random Number: ${Math.floor(Math.random()*100)}`
         }
+    }).then(resp => {
+        console.log('Response from HA', resp.data);
     })
+
+    res.send({'hello': 'hello'})
 });
 
 app.listen(5950, () =>
