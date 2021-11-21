@@ -37,5 +37,13 @@ const app = express();
 app.use(express.json());
 
 app.get('/test', async (req, res) => {
-    
+    axios.post('http://supervisor/core/api/states/input_text.noonlight_alarm_id',{
+        data: {
+            "state": `Random Number: ${Math.floor(Math.random()*100)}`
+        }
+    })
 });
+
+app.listen(5950, () =>
+  console.log('Express server is running on localhost:5950')
+);
