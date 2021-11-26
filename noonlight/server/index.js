@@ -27,35 +27,8 @@ The MIT License (MIT)
 let rawconfig = fs.readFileSync('../../data/options.json');  
 let config = JSON.parse(rawconfig);  
 
-console.log("Starting with configuration:", config)
-console.log("Environment Variables", JSON.stringify(process.env))
-
-axios.defaults.baseURL = String('http://supervisor/core/');
-axios.interceptors.request.use(
-    function (request) {
-            console.log(
-                `${request.method?.toUpperCase()} ${request.url}`,
-                request
-            );
-
-        if (request.headers === undefined) {
-            request.headers = {};
-        }
-
-        if (request.headers['Authorization'] === undefined) {
-            request.headers[
-                'Authorization'
-            ] = `Bearer ${process.env['SUPERVISOR_TOKEN']}`;
-        }
-
-        request.headers['Content-Type'] = 'application/json';
-
-        return request;
-    },
-    function (error) {
-        return Promise.reject(error);
-    }
-);
+//config
+//{ NOONLIGHT_TOKEN: '', NOONLIGHT_WEBHOOK_SECRET: '' }
 
 // process.env
 // {
@@ -101,15 +74,40 @@ axios.interceptors.request.use(
 // HA API http://supervisor/core/api
 // HA WS API http://supervisor/core/websocket
 
+axios.defaults.baseURL = 'http://supervisor/core/';
+axios.interceptors.request.use(
+    function (request) {
+            console.log(
+                `${request.method?.toUpperCase()} ${request.baseURL + request.url}`,
+                request.data
+            );
+
+        if (request.headers === undefined) {
+            request.headers = {};
+        }
+
+        if (request.headers['Authorization'] === undefined) {
+            request.headers[
+                'Authorization'
+            ] = `Bearer ${process.env['SUPERVISOR_TOKEN']}`;
+        }
+
+        request.headers['Content-Type'] = 'application/json';
+
+        return request;
+    },
+    function (error) {
+        return Promise.reject(error);
+    }
+);
+
 const app = express();
 app.use(express.json());
 
 app.get('/test', async (req, res) => {
-    console.log('received test request');
+    
     axios.post('api/states/input_text.noonlight_alarm_id',{
-        data: {
             "state": `Random Number: ${Math.floor(Math.random()*100)}`
-        }
     }).then(resp => {
         console.log('Response from HA', resp.data);
     }).catch(err => console.log(JSON.stringify(err)))
