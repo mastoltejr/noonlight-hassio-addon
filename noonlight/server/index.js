@@ -55,6 +55,7 @@ axios.interceptors.request.use(
 );
 
 console.log("Starting with configuration:", config)
+console.log("Environment Variables", JSON.stringify(process.env))
 
 // HA API http://supervisor/core/api
 // HA WS API http://supervisor/core/websocket
