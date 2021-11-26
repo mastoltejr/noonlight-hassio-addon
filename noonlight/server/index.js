@@ -45,7 +45,7 @@ app.get('/test', async (req, res) => {
         }
     }).then(resp => {
         console.log('Response from HA', resp.data);
-    })
+    }).catch(err => console.log(JSON.stringify(err)))
 
     res.send({'hello': 'hello'})
 });
