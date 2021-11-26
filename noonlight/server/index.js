@@ -27,19 +27,44 @@ The MIT License (MIT)
 let rawconfig = fs.readFileSync('../../data/options.json');  
 let config = JSON.parse(rawconfig);  
 
+axios.defaults.baseURL = String('http://supervisor/core/');
+axios.interceptors.request.use(
+    function (request) {
+            console.log(
+                `${request.method?.toUpperCase()} ${request.url}`,
+                request
+            );
+
+        if (request.headers === undefined) {
+            request.headers = {};
+        }
+
+        if (request.headers['Authorization'] === undefined) {
+            request.headers[
+                'Authorization'
+            ] = `Bearer ${config['SUPERVISOR_TOKEN']}`;
+        }
+
+        request.headers['Content-Type'] = 'application/json';
+
+        return request;
+    },
+    function (error) {
+        return Promise.reject(error);
+    }
+);
+
 console.log("Starting with configuration:", config)
 
 // HA API http://supervisor/core/api
 // HA WS API http://supervisor/core/websocket
-
-
 
 const app = express();
 app.use(express.json());
 
 app.get('/test', async (req, res) => {
     console.log('received test request');
-    axios.post('http://supervisor/core/api/states/input_text.noonlight_alarm_id',{
+    axios.post('api/states/input_text.noonlight_alarm_id',{
         data: {
             "state": `Random Number: ${Math.floor(Math.random()*100)}`
         }
