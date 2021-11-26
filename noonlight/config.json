@@ -1,6 +1,6 @@
 {
     "name": "Noonlight Hassio Addon",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "slug": "noonlight",
     "description": "Integrates Noonlight with Home Assistant to provide your DIY home alarm system an oomf",
     "url":"https://github.com/mastoltejr/noonlight-hassio-addon/tree/master/noonlight",
@@ -10,13 +10,11 @@
     "homeassistant_api": true,
     "options": {
       "NOONLIGHT_TOKEN":"",
-      "NOONLIGHT_WEBHOOK_SECRET":"",
-      "SUPERVISOR_TOKEN": ""
+      "NOONLIGHT_WEBHOOK_SECRET":""
     },
     "schema": {
       "NOONLIGHT_TOKEN": "str",
-      "NOONLIGHT_WEBHOOK_SECRET": "str",
-      "SUPERVISOR_TOKEN": "str"
+      "NOONLIGHT_WEBHOOK_SECRET": "str"
     },
     "ports": {
        "5950/tcp": 5950

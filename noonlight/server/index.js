@@ -27,6 +27,9 @@ The MIT License (MIT)
 let rawconfig = fs.readFileSync('../../data/options.json');  
 let config = JSON.parse(rawconfig);  
 
+console.log("Starting with configuration:", config)
+console.log("Environment Variables", JSON.stringify(process.env))
+
 axios.defaults.baseURL = String('http://supervisor/core/');
 axios.interceptors.request.use(
     function (request) {
@@ -42,7 +45,7 @@ axios.interceptors.request.use(
         if (request.headers['Authorization'] === undefined) {
             request.headers[
                 'Authorization'
-            ] = `Bearer ${config['SUPERVISOR_TOKEN']}`;
+            ] = `Bearer ${process.env['SUPERVISOR_TOKEN']}`;
         }
 
         request.headers['Content-Type'] = 'application/json';
@@ -54,8 +57,46 @@ axios.interceptors.request.use(
     }
 );
 
-console.log("Starting with configuration:", config)
-console.log("Environment Variables", JSON.stringify(process.env))
+// process.env
+// {
+//     "npm_config_user_agent":"npm/7.17.0 node/v14.18.1 linux x64 workspaces/false",
+//     "HOSTNAME":"eb5264a1-noonlight",
+//     "npm_node_execpath":"/usr/bin/node",
+//     "SHLVL":"2",
+//     "npm_config_noproxy":"",
+//     "HOME":"/root",
+//     "CWD":"/app",
+//     "npm_package_json":"/app/package.json",
+//     "npm_config_userconfig":"/root/.npmrc",
+//     "S6_CMD_WAIT_FOR_SERVICES":"1",
+//     "S6_LOGGING":"0",
+//     "COLOR":"0",
+//     "npm_config_metrics_registry":"https://registry.npmjs.org/",
+//     "_":"/usr/bin/npm",
+//     "npm_config_prefix":"/usr/local",
+//     "npm_config_cache":"/root/.npm",
+//     "HASSIO_TOKEN":"xxxx",
+//     "npm_config_node_gyp":"/usr/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js",
+//     "PATH":"/app/node_modules/.bin:/node_modules/.bin:/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+//     "NODE":"/usr/bin/node",
+//     "npm_package_name":"noonlight",
+//     "S6_BEHAVIOUR_IF_STAGE2_FAILS":"2",
+//     "LANG":"C.UTF-8",
+//     "npm_lifecycle_script":"node server",
+//     "npm_package_version":"1.0.6",
+//     "npm_lifecycle_event":"server",
+//     "npm_config_globalconfig":"/etc/npmrc",
+//     "npm_config_init_module":"/root/.npm-init.js",
+//     "PWD":"/app",
+//     "npm_config_globalignorefile":"/etc/npmignore",
+//     "npm_execpath":"/usr/lib/node_modules/npm/bin/npm-cli.js",
+//     "npm_command":"run-script",
+//     "TZ":"America/Denver",
+//     "SUPERVISOR_TOKEN":"xxxxx",
+//     "npm_config_python":"/usr/bin/python3",
+//     "INIT_CWD":"/app",
+//     "EDITOR":"vi"
+//  }
 
 // HA API http://supervisor/core/api
 // HA WS API http://supervisor/core/websocket
