@@ -126,7 +126,12 @@ app.use(express.json());
 //   pin: '9658'
 
 app.post('/createAlarm', async (req, res) => {
-    console.log(Object.keys(req).join('__'));
+    console.log(req._parsedUrl);
+    console.log(req.params);
+    console.log(req.query);
+    console.log(req.res);
+    console.log(req.body);
+    console.log(req.route);
     // axios.post('https://api-sandbox.noonlight.com/dispatch/v1/alarms',req.data).then(resp => {
     //     const {id, status, created_at, owner_id} = resp.data;
 
