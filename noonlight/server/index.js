@@ -74,7 +74,6 @@ let config = JSON.parse(rawconfig);
 // HA API http://supervisor/core/api
 // HA WS API http://supervisor/core/websocket
 
-axios.defaults.baseURL = 'http://supervisor/core/';
 axios.interceptors.request.use(
     function (request) {
             console.log(
@@ -85,11 +84,15 @@ axios.interceptors.request.use(
         if (request.headers === undefined) {
             request.headers = {};
         }
-
-        if (request.headers['Authorization'] === undefined) {
+        const url = String(request.url);
+        if(url.startsWith('http://supervisor/core/api')){
             request.headers[
                 'Authorization'
             ] = `Bearer ${process.env['SUPERVISOR_TOKEN']}`;
+        } else if(url.startsWith('https://api-sandbox.noonlight.com')){
+            request.headers[
+                'Authorization'
+            ] = `Bearer ${config['NOONLIGHT_TOKEN']}`;
         }
 
         request.headers['Content-Type'] = 'application/json';
@@ -104,16 +107,70 @@ axios.interceptors.request.use(
 const app = express();
 app.use(express.json());
 
-app.get('/test', async (req, res) => {
-    
-    axios.post('api/states/input_text.noonlight_alarm_id',{
-            "state": `Random Number: ${Math.floor(Math.random()*100)}`
-    }).then(resp => {
-        console.log('Response from HA', resp.data);
-    }).catch(err => console.log(JSON.stringify(err)))
+// Routes
 
-    res.send({'hello': 'hello'})
+// Create Alarm ID
+// HA automation calls on alarm trigger
+// input
+// location: {
+//     address: {line1: '1700 S Monroe St', city: 'Denver', state: 'CO', zip: '80210'}
+//   },
+//   instructions: {entry: 'The Gate Code'},
+//   name: 'Michael Stolte',
+//   phone: '7138994043',
+//   pin: '9658'
+
+app.post('/createAlarm', async (req, res) => {
+    console.log(res.data);
+    // axios.post('https://api-sandbox.noonlight.com/dispatch/v1/alarms',req.data).then(resp => {
+    //     const {id, status, created_at, owner_id} = resp.data;
+
+    //     await axios.post('http://supervisor/core/api/states/sensor.noonlight',{
+    //         "state": `Contacted Noonlight`,
+    //         "attributes": {
+    //             "alarm_id": id,
+    //             status,
+    //             created_at, 
+    //             owner_id
+    //         }
+    //     });
+
+
+    // });
 });
+
+// Add Trigger Device to Alarm
+// HA automation calls on sensor.noonlight changes to Contacted Noonlight
+// input
+// {
+//     meta: {
+//       attribute: 'contact',
+//       value: 'open',
+//       device_id?: string,
+//       device_model: 'Aqara',
+//       device_name: 'Kitchen Window',
+//       device_manufacturer: 'Aqara',
+//       media: string
+//     },
+//     event_type: 'alarm.device.activated_alarm',
+//     event_time: '2021-11-27T14:55:00'
+//   }
+// door => door_open/door_closed, contact => open/closed, motion => detected/cleared, water_leak => detected/cleared
+
+app.post('/addAlarmTrigger', async (req, res) => {
+    axios.post(`https://api-sandbox.noonlight.com/dispatch/v1/alarms/${req.data.alarm_id}/events`)
+});
+
+// app.get('/test', async (req, res) => {
+
+//     axios.post('http://supervisor/core/api/states/input_text.noonlight_alarm_id',{
+//             "state": `Random Number: ${Math.floor(Math.random()*100)}`
+//     }).then(resp => {
+//         console.log('Response from HA', resp.data);
+//     }).catch(err => console.log(JSON.stringify(err)))
+
+//     res.send({'hello': 'hello'})
+// });
 
 app.listen(5950, () =>
   console.log('Express server is running on localhost:5950')
