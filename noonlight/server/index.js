@@ -115,7 +115,7 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
     function (response) {
             console.log(
-                `RECIEVED: ${request.method?.toUpperCase()} ${request.url}`,
+                `RECIEVED: ${response.url}`,
                 response.data
             );
 
