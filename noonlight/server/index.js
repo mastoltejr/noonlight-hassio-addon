@@ -38,8 +38,14 @@ The MIT License (MIT)
 //config
 //{ NOONLIGHT_TOKEN: '', NOONLIGHT_WEBHOOK_SECRET: '' }
 
-console.log(process.env);
-console.log(config);
+console.log(fs.readdirSync('../../'));
+console.log('#################');
+console.log(fs.readdirSync(process.env.HOME));
+console.log('#################');
+console.log(fs.readdirSync(process.env.CWD));
+
+// console.log(process.env);
+// console.log(config);
 // {
 //     "npm_config_user_agent":"npm/7.17.0 node/v14.18.1 linux x64 workspaces/false",
 //     "HOSTNAME":"eb5264a1-noonlight",
