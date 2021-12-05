@@ -128,8 +128,8 @@ app.use(express.json());
 //   phone: '7138994043',
 //   pin: '9658'
 
-app.get('/createAlarm', async (req, res) => {
-    await axios.get('http://supervisor/core/api/states/variable.home_alarm_trigger').then((resp) => {
+app.get('/createAlarm', (req, res) => {
+    axios.get('http://supervisor/core/api/states/variable.home_alarm_trigger').then((resp) => {
         const { datetime, device_id, device_name, device_manufacturer, entity_id, entity_value} = resp.data.attributes;
         axios.post('https://api-sandbox.noonlight.com/dispatch/v1/alarms',{
             ...config.USERS[0],
@@ -142,7 +142,7 @@ app.get('/createAlarm', async (req, res) => {
             }
         }).then(resp => {
             const {id: alarm_id, status, created_at, owner_id} = resp.data;
-            await axios.post('http://supervisor/core/api/states/sensor.noonlight',{
+            axios.post('http://supervisor/core/api/states/sensor.noonlight',{
                 "state": `Contacted Noonlight`,
                 "attributes": {
                     alarm_id,
