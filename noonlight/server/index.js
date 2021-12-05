@@ -112,14 +112,6 @@ axios.interceptors.request.use(
 const app = express();
 app.use(express.json());
 
-axios.post('http://supervisor/core/api/states/sensor.noonlight_trigger',{
-    "state": "",
-    "attributes": {
-        "value": "",
-        "datetime": ""
-    }
-});
-
 // Routes
 
 // Create Alarm ID
@@ -134,7 +126,7 @@ axios.post('http://supervisor/core/api/states/sensor.noonlight_trigger',{
 //   pin: '9658'
 
 app.get('/createAlarm', async (req, res) => {
-    await axios.get('http://supervisor/core/api/states/sensor.noonlight_trigger').then((resp) => {
+    await axios.get('http://supervisor/core/api/states/variable.home_alarm_trigger').then((resp) => {
         console.log(resp.data);
     });
     //console.log(`Body: ${JSON.stringify(req.body)}`);
