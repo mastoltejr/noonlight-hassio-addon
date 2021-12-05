@@ -24,8 +24,13 @@ The MIT License (MIT)
  const axios = require('axios');
 
  // Load Configuration
-let rawconfig = fs.readFileSync('../../data/options.json');  
-let config = JSON.parse(rawconfig);  
+ try {
+    let rawconfig = fs.readFileSync('../../data/options.json');  
+    let config = JSON.parse(rawconfig);
+ } catch(err){
+    console.log('could not load config');
+ }
+  
 
 //config
 //{ NOONLIGHT_TOKEN: '', NOONLIGHT_WEBHOOK_SECRET: '' }
@@ -121,7 +126,7 @@ app.use(express.json());
 //   pin: '9658'
 
 app.post('/createAlarm', async (req, res) => {
-    console.log(res.data);
+    console.log(req.body);
     // axios.post('https://api-sandbox.noonlight.com/dispatch/v1/alarms',req.data).then(resp => {
     //     const {id, status, created_at, owner_id} = resp.data;
 
@@ -137,6 +142,8 @@ app.post('/createAlarm', async (req, res) => {
 
 
     // });
+
+    res.send(true);
 });
 
 // Add Trigger Device to Alarm
