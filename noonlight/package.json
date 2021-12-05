@@ -1,6 +1,6 @@
 {
     "name": "noonlight",
-    "version": "1.0.28",
+    "version": "1.0.29",
     "private": true,
     "dependencies": {
         "axios": "^0.24.0",

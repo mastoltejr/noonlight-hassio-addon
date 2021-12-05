@@ -38,7 +38,8 @@ The MIT License (MIT)
 //config
 //{ NOONLIGHT_TOKEN: '', NOONLIGHT_WEBHOOK_SECRET: '' }
 
-// process.env
+console.log(process.env);
+console.log(config);
 // {
 //     "npm_config_user_agent":"npm/7.17.0 node/v14.18.1 linux x64 workspaces/false",
 //     "HOSTNAME":"eb5264a1-noonlight",
@@ -172,17 +173,26 @@ app.get('/createAlarm', (req, res) => {
                 }
             });
 
+            axios.post('http://supervisor/core/api/states/sensor.noonlight_alarm_owners',{
+                "state": `Contacted Noonlight`,
+                "attributes": {
+                    alarm_id,
+                    status,
+                    created_at, 
+                    owner_id
+                }
+            });
+
             // need to add trigger device
 
-            // need to add second person
-            Promise.all(config.USERS.slice(1).map(user => {
-                axios.post(`https://api-sandbox.noonlight.com/dispatch/v1/alarms/${alarm_id}/people`,{
-                    ...user
-                })
-            }))
-            .then(resp => {
-                // update sensor saying people were added ???
-            });
+            // need to add people
+            if(USERS.length > 1){
+                axios.post(`https://api-sandbox.noonlight.com/dispatch/v1/alarms/${alarm_id}/people`,USERS.slice(1))
+                .then(resp => {
+                    // update sensor saying people were added ???
+                }); 
+            }
+               
 
         });
 
