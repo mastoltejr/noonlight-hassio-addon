@@ -151,7 +151,9 @@ app.get('/createAlarm', (req, res) => {
         const { datetime, device_id, device_name, device_manufacturer, entity_id, entity_value} = resp.data.attributes;
         axios.post('https://api-sandbox.noonlight.com/dispatch/v1/alarms',{
             ...config.USERS[0],
-            address: config.ADDRESS,
+            location: {
+                address: config.ADDRESS
+            },
             services: {
                 police: true
             },
@@ -173,7 +175,14 @@ app.get('/createAlarm', (req, res) => {
             // need to add trigger device
 
             // need to add second person
-
+            Promise.all(config.USERS.slice(1).map(user => {
+                axios.post(`https://api-sandbox.noonlight.com/dispatch/v1/alarms/${alarm_id}/people`,{
+                    ...user
+                })
+            }))
+            .then(resp => {
+                // update sensor saying people were added ???
+            });
 
         });
 
