@@ -85,7 +85,7 @@ The MIT License (MIT)
 axios.interceptors.request.use(
     function (request) {
             console.log(
-                `${request.method?.toUpperCase()} ${request.baseURL + request.url}`,
+                `REQUESTING: ${request.method?.toUpperCase()} ${request.url}`,
                 request.data
             );
 
@@ -106,6 +106,20 @@ axios.interceptors.request.use(
         request.headers['Content-Type'] = 'application/json';
 
         return request;
+    },
+    function (error) {
+        return Promise.reject(error);
+    }
+);
+
+axios.interceptors.response.use(
+    function (response) {
+            console.log(
+                `RECIEVED: ${request.method?.toUpperCase()} ${request.url}`,
+                response.data
+            );
+
+        return response;
     },
     function (error) {
         return Promise.reject(error);
