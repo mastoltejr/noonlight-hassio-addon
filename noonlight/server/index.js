@@ -23,10 +23,13 @@ The MIT License (MIT)
  const express = require('express');
  const axios = require('axios');
 
+
  // Load Configuration
+ let rawconfig;
+ let config;
  try {
-    let rawconfig = fs.readFileSync('../../data/options.json');  
-    let config = JSON.parse(rawconfig);
+    rawconfig = fs.readFileSync('../../data/options.json');  
+    config = JSON.parse(rawconfig);
  } catch(err){
     console.log('could not load config');
  }
@@ -127,21 +130,41 @@ app.use(express.json());
 
 app.get('/createAlarm', async (req, res) => {
     await axios.get('http://supervisor/core/api/states/variable.home_alarm_trigger').then((resp) => {
-        console.log(resp.data);
+        const { datetime, device_id, device_name, device_manufacturer, entity_id, entity_value} = resp.data.attributes;
+        axios.post('https://api-sandbox.noonlight.com/dispatch/v1/alarms',{
+            ...config.USERS[0],
+            ...config.ADDRESS,
+            services: {
+                police: true
+            },
+            instructions: {
+                entry: config.INSTRUCTIONS
+            }
+        }).then(resp => {
+            const {id: alarm_id, status, created_at, owner_id} = resp.data;
+            await axios.post('http://supervisor/core/api/states/sensor.noonlight',{
+                "state": `Contacted Noonlight`,
+                "attributes": {
+                    alarm_id,
+                    status,
+                    created_at, 
+                    owner_id
+                }
+            });
+
+            // need to add trigger device
+
+            // need to add second person
+
+
+        });
+
     });
     //console.log(`Body: ${JSON.stringify(req.body)}`);
     // axios.post('https://api-sandbox.noonlight.com/dispatch/v1/alarms',req.data).then(resp => {
     //     const {id, status, created_at, owner_id} = resp.data;
 
-    //     await axios.post('http://supervisor/core/api/states/sensor.noonlight',{
-    //         "state": `Contacted Noonlight`,
-    //         "attributes": {
-    //             "alarm_id": id,
-    //             status,
-    //             created_at, 
-    //             owner_id
-    //         }
-    //     });
+    
 
 
     // });
