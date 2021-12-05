@@ -125,8 +125,11 @@ const app = express();
 //   phone: '7138994043',
 //   pin: '9658'
 
-app.post('/createAlarm', async (req, res) => {
-    console.log(`Body: ${JSON.stringify(req.body)}`);
+app.get('/createAlarm', async (req, res) => {
+    await axios.get('http://supervisor/core/api/states/sensor.home_alarm_trigger').then((resp) => {
+        console.log(resp.data);
+    });
+    //console.log(`Body: ${JSON.stringify(req.body)}`);
     // axios.post('https://api-sandbox.noonlight.com/dispatch/v1/alarms',req.data).then(resp => {
     //     const {id, status, created_at, owner_id} = resp.data;
 
