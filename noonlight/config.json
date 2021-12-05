@@ -1,6 +1,6 @@
 {
     "name": "Noonlight Hassio Addon",
-    "version": "1.0.25",
+    "version": "1.0.26",
     "slug": "noonlight",
     "description": "Integrates Noonlight with Home Assistant to provide your DIY home alarm system an oomf",
     "url":"https://github.com/mastoltejr/noonlight-hassio-addon/tree/master/noonlight",
@@ -13,7 +13,6 @@
       "NOONLIGHT_WEBHOOK_SECRET":"",
       "ADDRESS": {
         "line1": "1700 S Monroe St",
-        "line2": "",
         "city": "Denver",
         "state": "CO",
         "zip": "80210"
@@ -22,14 +21,13 @@
         {"name": "Michael Stolte", "phone": "7138994043", "pin": "3474"},
         {"name": "Bianca Garza", "phone": "9567356261", "pin": "3474"}
       ],
-      "INSTRUCTIONS": ""
+      "INSTRUCTIONS": "example instructions"
     },
     "schema": {
       "NOONLIGHT_TOKEN": "str",
       "NOONLIGHT_WEBHOOK_SECRET": "str",
       "ADDRESS": {
         "line1": "str",
-        "line2": "str",
         "city": "str",
         "state": "str",
         "zip": "str"

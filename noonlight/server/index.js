@@ -147,7 +147,7 @@ app.get('/createAlarm', (req, res) => {
         const { datetime, device_id, device_name, device_manufacturer, entity_id, entity_value} = resp.data.attributes;
         axios.post('https://api-sandbox.noonlight.com/dispatch/v1/alarms',{
             ...config.USERS[0],
-            ...config.ADDRESS,
+            address: config.ADDRESS,
             services: {
                 police: true
             },
