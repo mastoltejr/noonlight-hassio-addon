@@ -140,6 +140,59 @@ axios.interceptors.response.use(
 const app = express();
 app.use(express.json());
 
+const timestamp = () => {
+    return new Date().toLocaleDateString("en-US",{month: 'numeric', day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit"});
+}
+
+const event_map = {
+    smoke: {
+        on: "detected",
+        off: "clear",
+        default: "detected" 
+    },
+    camera: {
+        default: "unknown"
+    },
+    lock: {
+        lockec: "locked",
+        unlocked: "unlocked",
+        on: "door_open",
+        off: "door_closed",
+        default: "door_open"
+    },
+    contact: {
+        on: "open",
+        off: "closed",
+        open: "open",
+        closed: "closed",
+        default: "open"
+    },
+    motion: {
+        on: "detected",
+        off: "cleared",
+        default: "detected"
+    },
+    network_connection: {
+        on: "established",
+        off: "lost",
+        default: "lost"
+    },
+    water_leak: {
+        on: "detected",
+        off: "clear",
+        wet: "detected",
+        dry: "clear",
+        default: "detected"
+    },
+    freeze: {
+        on: "detected",
+        off: "cleared",
+        default: "detected"
+    }
+};
+
+let current_alarm_id = '';
+
 // Routes
 
 // Create Alarm ID
@@ -154,99 +207,152 @@ app.use(express.json());
 //   pin: '9658'
 
 app.get('/createAlarm', (req, res) => {
-    axios.get('http://supervisor/core/api/states/variable.home_alarm_trigger').then((resp) => {
-        const { datetime, device_id, device_name, device_manufacturer, entity_id, entity_value} = resp.data.attributes;
-        axios.post('https://api-sandbox.noonlight.com/dispatch/v1/alarms',{
-            ...config.USERS[0],
-            location: {
-                address: config.ADDRESS
-            },
-            services: {
-                police: true
-            },
-            instructions: {
-                entry: config.INSTRUCTIONS
+    // create Noonlight Alarm
+    axios.post('https://api-sandbox.noonlight.com/dispatch/v1/alarms',{
+        ...config.USERS[0],
+        location: {
+            address: config.ADDRESS
+        },
+        services: {
+            police: true
+        },
+        instructions: {
+            entry: config.INSTRUCTIONS
+        }
+    }).then(resp => {
+        const {id: alarm_id, status, created_at, owner_id} = resp.data;
+        current_alarm_id = alarm_id;
+        // update HA Noonlight Sensor
+        axios.post('http://supervisor/core/api/states/sensor.noonlight',{
+            "state": `Contacted Noonlight`,
+            "attributes": {
+                friendly_name: "Noonlight Alarm Status",
+                icon: "mdi:alarm-bell",
+                alarm_id,
+                status,
+                created_at, 
+                owner_id
             }
-        }).then(resp => {
-            const {id: alarm_id, status, created_at, owner_id} = resp.data;
-            axios.post('http://supervisor/core/api/states/sensor.noonlight',{
-                "state": `Contacted Noonlight`,
-                "attributes": {
-                    alarm_id,
-                    status,
-                    created_at, 
-                    owner_id
-                }
-            });
-
-            axios.post('http://supervisor/core/api/states/sensor.noonlight_alarm_owners',{
-                "state": `Contacted Noonlight`,
-                "attributes": {
-                    alarm_id,
-                    status,
-                    created_at, 
-                    owner_id
-                }
-            });
-
-            // need to add trigger device
-
-            // need to add people
-            if(USERS.length > 1){
-                axios.post(`https://api-sandbox.noonlight.com/dispatch/v1/alarms/${alarm_id}/people`,USERS.slice(1))
-                .then(resp => {
-                    // update sensor saying people were added ???
-                }); 
-            }
-               
-
         });
 
+        // update HA Noonlight Owners
+        const ogTimestamp = timestamp();
+        axios.post('http://supervisor/core/api/states/sensor.noonlight_alarm_owners',{
+            "state": config.USERS[0].name,
+            "attributes": {
+                friendly_name: "Noonlight Alarm Owners",
+                icon: "mdi:account-group",
+                [config.USERS[0].name]: ogTimestamp
+            }
+        });
+
+        // Add additional users to alarm / update HA with results
+        if(config.USERS.length > 1){
+            axios.post(`https://api-sandbox.noonlight.com/dispatch/v1/alarms/${alarm_id}/people`,config.USERS.slice(1))
+            .then(resp => {
+                const newTimestamp = timestamp();
+                axios.post('http://supervisor/core/api/states/sensor.noonlight_alarm_owners',{
+                    "state": `${config.USERS.length} Users`,
+                    "attributes": {
+                        friendly_name: "Noonlight Alarm Owners",
+                        icon: "mdi:account-group",
+                        [config.USERS[0].name]: ogTimestamp,
+                        ...config.USERS.slice(1).reduce((obj, user) => ({...obj, [user.name]: newTimestamp}),{})
+                    }
+                });
+            }); 
+        }
     });
-    //console.log(`Body: ${JSON.stringify(req.body)}`);
-    // axios.post('https://api-sandbox.noonlight.com/dispatch/v1/alarms',req.data).then(resp => {
-    //     const {id, status, created_at, owner_id} = resp.data;
-
-    
-
-
-    // });
 
     res.send(true);
 });
 
-// Add Trigger Device to Alarm
-// HA automation calls on sensor.noonlight changes to Contacted Noonlight
-// input
-// {
-//     meta: {
-//       attribute: 'contact',
-//       value: 'open',
-//       device_id?: string,
-//       device_model: 'Aqara',
-//       device_name: 'Kitchen Window',
-//       device_manufacturer: 'Aqara',
-//       media: string
-//     },
-//     event_type: 'alarm.device.activated_alarm',
-//     event_time: '2021-11-27T14:55:00'
-//   }
-// door => door_open/door_closed, contact => open/closed, motion => detected/cleared, water_leak => detected/cleared
+// for cameras, have an automation take snapshot https://www.home-assistant.io/integrations/camera#service-snapshot
+// have the filename be the alarm_id + trigger.time + entity_id
+// save this filename in the home_alarm_event entity_value attribute
 
-app.post('/addAlarmTrigger', async (req, res) => {
-    axios.post(`https://api-sandbox.noonlight.com/dispatch/v1/alarms/${req.data.alarm_id}/events`)
+app.get('/addAlarmEvent', (req, res) => {
+    axios.get('http://supervisor/core/api/states/variable.home_alarm_event').then((resp) => {
+        const { event_type, event_time, device_id, device_name, device_manufacturer, entity_id, entity_value, noonlight_recieved} = resp.data.attributes;
+        const attribute = config.ENTITY_MAP.find(e => e.entity === entity_id)?.attribute;
+        if(attribute !== undefined){
+            axios.post(`https://api-sandbox.noonlight.com/dispatch/v1/alarms/${current_alarm_id}/events`,[
+                {
+                    event_type,
+                    event_time,
+                    meta: {
+                        attribute: attribute,
+                        value: event_map[attribute][entity_value],
+                        device_id,
+                        device_name,
+                        device_model,
+                        device_manufacturer,
+                        media: attribute === 'camera' ? entity_value : undefined
+                    }
+                }
+            ]).then(noon => {
+                axios.post('http://supervisor/core/api/states/variable.home_alarm_event',{
+                    value: resp.data.value,
+                    attributes: {
+                        ...resp.data.attributes,
+                        noonlight_recieved: true
+                    }
+                });
+            }).catch(() => {
+                axios.post('http://supervisor/core/api/states/variable.home_alarm_event',{
+                    value: `Noonlight did not recieve ${attribute} event`
+                })
+            });
+        } else {
+            // post that noonlight was unsuccessful
+            axios.post('http://supervisor/core/api/states/variable.home_alarm_event',{
+                value: `Noonlight did not recieve ${attribute} event`
+            });
+        }
+        
+    });
+    res.send(true);
 });
 
-// app.get('/test', async (req, res) => {
+app.get('/cancelAlarm', (req, res) => {
+    axios.get('http://supervisor/core/api/states/sensor.noonlight').then(resp => {
+        const {alarm_id, ...attributes} = resp.data.attributes;    
+        axios.post(`https://api-sandbox.noonlight.com/dispatch/v1/alarms/${alarm_id}/status`,{
+            status: 'CANCELED',
+            pin: config.USERS[0].pin
+        }).then(noon => {
+            const { status, created_at} = noon.data;
+            axios.post('http://supervisor/core/api/states/sensor.noonlight',{
+                "state": `Alarm ${status}`,
+                "attributes": {
+                    alarm_id,
+                    ...attributes,
+                    created_at
+                }
+            });
+            current_alarm_id = '';
 
-//     axios.post('http://supervisor/core/api/states/input_text.noonlight_alarm_id',{
-//             "state": `Random Number: ${Math.floor(Math.random()*100)}`
-//     }).then(resp => {
-//         console.log('Response from HA', resp.data);
-//     }).catch(err => console.log(JSON.stringify(err)))
+            setTimeout(() => {
+                axios.get('http://supervisor/core/api/states/sensor.noonlight').then(resp => {
+                    const {value} = resp.data.value;
+                    if(value === `Alarm ${status}`){
+                        axios.post('http://supervisor/core/api/states/sensor.noonlight',{
+                            "state": ``,
+                            "attributes": {
+                                alarm_id: '',
+                                owner_id: '',
+                                created_at: '',
+                                status: 'Ready'
+                            }
+                        });
+                    }
+                });
+            },1000*60*5);
+        })  
+    });
+    res.send(true);
+})
 
-//     res.send({'hello': 'hello'})
-// });
 
 app.listen(5950, () =>
   console.log('Express server is running on localhost:5950')

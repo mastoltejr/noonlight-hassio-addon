@@ -1,6 +1,6 @@
 {
     "name": "Noonlight Hassio Addon",
-    "version": "1.0.30",
+    "version": "1.0.31",
     "slug": "noonlight",
     "description": "Integrates Noonlight with Home Assistant to provide your DIY home alarm system an oomf",
     "url":"https://github.com/mastoltejr/noonlight-hassio-addon/tree/master/noonlight",
@@ -15,16 +15,16 @@
       "NOONLIGHT_TOKEN":"",
       "NOONLIGHT_WEBHOOK_SECRET":"",
       "ADDRESS": {
-        "line1": "1700 S Monroe St",
-        "city": "Denver",
-        "state": "CO",
-        "zip": "80210"
+        "line1": "",
+        "city": "",
+        "state": "",
+        "zip": ""
       },
       "USERS": [
-        {"name": "Michael Stolte", "phone": "7138994043", "pin": "3474"},
-        {"name": "Bianca Garza", "phone": "9567356261", "pin": "3474"}
+        {"name": "", "phone": "", "pin": ""}
       ],
-      "INSTRUCTIONS": "example instructions"
+      "INSTRUCTIONS": "example instructions",
+      "ENTITY_MAP": []
     },
     "schema": {
       "NOONLIGHT_TOKEN": "str",
@@ -36,10 +36,12 @@
         "zip": "str"
       },
       "USERS": [
-        {"name": "str", "phone": "str", "pin": "str"},
-        {"name": "str", "phone": "str", "pin": "str"}
+        {"name": "str", "phone": "str", "pin": "str", "height": {"unit": "str", "value": "int(20,100)"}}
       ],
-      "INSTRUCTIONS": "str"
+      "INSTRUCTIONS": "str",
+      "ENTITY_MAP": [
+        {"entity": "str", "attribute":"list(smoke|camera|lock|motion|contact|network_connection|water_leak|freeze)"}
+      ]
     },
     "ports": {
        "5950/tcp": 5950
