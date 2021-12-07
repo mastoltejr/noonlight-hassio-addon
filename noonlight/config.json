@@ -1,6 +1,6 @@
 {
     "name": "Noonlight Hassio Addon",
-    "version": "1.0.33",
+    "version": "1.0.34",
     "slug": "noonlight",
     "description": "Integrates Noonlight with Home Assistant to provide your DIY home alarm system an oomf",
     "url":"https://github.com/mastoltejr/noonlight-hassio-addon/tree/master/noonlight",
@@ -36,7 +36,7 @@
         "zip": "str"
       },
       "USERS": [
-        {"name": "str", "phone": "str", "pin": "str", "height": {"unit": "str", "value": "int(20,100)"}}
+        {"name": "str", "phone": "str", "pin": "str", "height_unit": "str", "height_value": "int(20,100)"}
       ],
       "INSTRUCTIONS": "str",
       "ENTITY_MAP": [
