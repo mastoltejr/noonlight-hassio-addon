@@ -186,6 +186,27 @@ const event_map = {
     }
 };
 
+axios.post('http://supervisor/core/api/states/sensor.noonlight',{
+    "state": ``,
+    "attributes": {
+        friendly_name: "Noonlight Alarm Status",
+        icon: "mdi:alarm-bell",
+        alarm_id: '',
+        status: '',
+        created_at: '', 
+        owner_id: ''
+    }
+});
+
+axios.post('http://supervisor/core/api/states/sensor.noonlight_alarm_owners',{
+    "state": '',
+    "attributes": {
+        friendly_name: "Noonlight Alarm Owners",
+        icon: "mdi:account-group",
+        ...config.USERS.reduce((obj, user) => ({...obj, [user.name]: ''}),{})
+    }
+});
+
 let current_alarm_id = '';
 
 // Routes
@@ -293,7 +314,7 @@ app.get('/addAlarmEvent', (req, res) => {
                         media: attribute === 'camera' ? entity_value : undefined
                     }
                 }
-            ]).then(noon => {
+            ]).then(() => {
                 axios.post('http://supervisor/core/api/states/variable.home_alarm_event',{
                     value: resp.data.value,
                     attributes: {
@@ -329,6 +350,7 @@ app.get('/cancelAlarm', (req, res) => {
                 "state": `Alarm ${status}`,
                 "attributes": {
                     alarm_id,
+                    status,
                     ...attributes,
                     created_at
                 }
@@ -337,7 +359,7 @@ app.get('/cancelAlarm', (req, res) => {
 
             setTimeout(() => {
                 axios.get('http://supervisor/core/api/states/sensor.noonlight').then(resp => {
-                    const {value} = resp.data.value;
+                    const {value} = resp.data;
                     if(value === `Alarm ${status}`){
                         axios.post('http://supervisor/core/api/states/sensor.noonlight',{
                             "state": ``,
