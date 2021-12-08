@@ -38,11 +38,6 @@ The MIT License (MIT)
 //config
 //{ NOONLIGHT_TOKEN: '', NOONLIGHT_WEBHOOK_SECRET: '' }
 
-console.log(fs.readdirSync('../../'));
-console.log('#################');
-console.log(fs.readdirSync(process.env.HOME));
-console.log('#################');
-console.log(fs.readdirSync(process.env.CWD));
 
 // console.log(process.env);
 // console.log(config);
@@ -208,8 +203,11 @@ let current_alarm_id = '';
 
 app.get('/createAlarm', (req, res) => {
     // create Noonlight Alarm
+    const user = config.USERS[0];
     axios.post('https://api-sandbox.noonlight.com/dispatch/v1/alarms',{
-        ...config.USERS[0],
+        name: user.name,
+        phone: user.phone,
+        pin: user.pin,
         location: {
             address: config.ADDRESS
         },
@@ -248,8 +246,13 @@ app.get('/createAlarm', (req, res) => {
 
         // Add additional users to alarm / update HA with results
         if(config.USERS.length > 1){
-            axios.post(`https://api-sandbox.noonlight.com/dispatch/v1/alarms/${alarm_id}/people`,config.USERS.slice(1))
-            .then(resp => {
+            axios.post(`https://api-sandbox.noonlight.com/dispatch/v1/alarms/${alarm_id}/people`,
+                config.USERS.slice(1).map(user => ({
+                    name: user.name, 
+                    phone: user.phone, 
+                    pin: user.pin
+                })))
+            .then(() => {
                 const newTimestamp = timestamp();
                 axios.post('http://supervisor/core/api/states/sensor.noonlight_alarm_owners',{
                     "state": `${config.USERS.length} Users`,
