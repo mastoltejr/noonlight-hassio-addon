@@ -12,6 +12,7 @@
       "config"
     ],
     "options": {
+      "NOONLIGHT_URL": "https://api-sandbox.noonlight.com",
       "NOONLIGHT_TOKEN":"",
       "NOONLIGHT_WEBHOOK_SECRET":"",
       "ADDRESS": {
@@ -29,6 +30,7 @@
       ]
     },
     "schema": {
+      "NOONLIGHT_URL": "str",
       "NOONLIGHT_TOKEN": "str",
       "NOONLIGHT_WEBHOOK_SECRET": "str",
       "ADDRESS": {

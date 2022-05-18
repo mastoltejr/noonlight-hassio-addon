@@ -95,7 +95,7 @@ axios.interceptors.request.use(
             request.headers[
                 'Authorization'
             ] = `Bearer ${process.env['SUPERVISOR_TOKEN']}`;
-        } else if(url.startsWith('https://api-sandbox.noonlight.com')){
+        } else if(url.startsWith(config['NOONLIGHT_URL'])){
             request.headers[
                 'Authorization'
             ] = `Bearer ${config['NOONLIGHT_TOKEN']}`;
@@ -225,7 +225,7 @@ let current_alarm_id = '';
 app.get('/createAlarm', (req, res) => {
     // create Noonlight Alarm
     const user = config.USERS[0];
-    axios.post('https://api-sandbox.noonlight.com/dispatch/v1/alarms',{
+    axios.post(`${config['NOONLIGHT_URL']}/dispatch/v1/alarms`,{
         name: user.name,
         phone: user.phone,
         pin: user.pin,
@@ -267,7 +267,7 @@ app.get('/createAlarm', (req, res) => {
 
         // Add additional users to alarm / update HA with results
         if(config.USERS.length > 1){
-            axios.post(`https://api-sandbox.noonlight.com/dispatch/v1/alarms/${alarm_id}/people`,
+            axios.post(`${config['NOONLIGHT_URL']}/dispatch/v1/alarms/${alarm_id}/people`,
                 config.USERS.slice(1).map(user => ({
                     name: user.name, 
                     phone: user.phone, 
@@ -300,7 +300,7 @@ app.get('/addAlarmEvent', (req, res) => {
         const { event_type, event_time, device_id, device_name, device_manufacturer, entity_id, entity_value, noonlight_recieved} = resp.data.attributes;
         const attribute = config.ENTITY_MAP.find(e => e.entity === entity_id)?.attribute;
         if(attribute !== undefined){
-            axios.post(`https://api-sandbox.noonlight.com/dispatch/v1/alarms/${current_alarm_id}/events`,[
+            axios.post(`${config['NOONLIGHT_URL']}/dispatch/v1/alarms/${current_alarm_id}/events`,[
                 {
                     event_type,
                     event_time,
@@ -341,7 +341,7 @@ app.get('/addAlarmEvent', (req, res) => {
 app.get('/cancelAlarm', (req, res) => {
     axios.get('http://supervisor/core/api/states/sensor.noonlight').then(resp => {
         const {alarm_id, ...attributes} = resp.data.attributes;    
-        axios.post(`https://api-sandbox.noonlight.com/dispatch/v1/alarms/${alarm_id}/status`,{
+        axios.post(`${config['NOONLIGHT_URL']}/dispatch/v1/alarms/${alarm_id}/status`,{
             status: 'CANCELED',
             pin: config.USERS[0].pin
         }).then(noon => {
